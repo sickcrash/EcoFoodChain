@@ -5,7 +5,7 @@ This repository contains the software artifact associated with the paper regardi
 
 It provides a fully reproducible environment to simulate a microservices architecture orchestrated by **Kubernetes** (emulating AWS EKS) and integrated with simulated **AWS services** (via LocalStack). This artifact demonstrates the feasibility of the architectural model described in the paper without incurring public cloud costs.
 
-To ensure this artifact is strictly reproducible on any review machine (Windows, macOS, Linux) and without any licenses costs.
+This artifact is strictly reproducible on any review machine (Windows, macOS, Linux) and without any licenses costs.
 
 Research Environment: Relies on Amazon Elastic Kubernetes Service (EKS) for a managed control plane. Uses Amazon Elastic Container Registry (ECR) where images are pushed and then pulled by nodes.
 Artifact Implementation: Uses Kind (Kubernetes in Docker) and Direct Image Loading.
