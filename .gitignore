@@ -1,0 +1,10 @@
+# Ignora le cartelle pesanti della build Unity
+microservices/metaverso/Build/
+microservices/metaverso/StreamingAssets/
+microservices/metaverso/TemplateData/
+
+# Ignora file temporanei e log
+__pycache__/
+*.log
+.DS_Store
+venv/

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filiera-middleware
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filiera-middleware
+  template:
+    metadata:
+      labels:
+        app: filiera-middleware
+    spec:
+      containers:
+      - name: filiera-frontend
+        image: ecofoodchain/filiera-middleware:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000

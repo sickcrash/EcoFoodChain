@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>EcoFood Chain</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+  <link rel="icon" href="img/logo.png" type="image/png" />
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <header class="topbar" role="banner" aria-label="Intestazione applicazione">
+      <div class="logo" aria-hidden="true">
+        <img src="img/logo.png" alt="EcoFoodChain logo" />
+      </div>
+      <div class="title">EcoFoodChain <span class="dash">—</span> Launcher</div>
+      <div class="spacer"></div>
+
+      <div class="actions">
+        <!-- Dropdown informativo -->
+        <div class="dropdown">
+          <button id="infoBtn" class="info-btn" aria-haspopup="true" aria-expanded="false" aria-controls="infoMenu">
+            Informazioni sul progetto <span class="caret" aria-hidden="true"></span>
+          </button>
+          <div id="infoMenu" class="menu" role="menu" aria-labelledby="infoBtn">
+            <button role="menuitem" data-target="giardinetto">
+              <svg class="mi-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M3 12l5-5 5 5v7H3v-7z" stroke="#16a34a" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M14 14c3-4 5-5 7-5 0 4-2 7-7 8" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Giardinetto</span>
+            </button>
+            <button role="menuitem" data-target="opnatura">
+              <svg class="mi-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="#0ea5a4" stroke-width="2"/>
+                <path d="M7 14c2-3 4-4 10-4-2 4-4 6-10 6" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>OPNatura</span>
+            </button>
+            <button role="menuitem" data-target="ecofoodchain">
+              <svg class="mi-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="6" width="18" height="12" rx="3" stroke="#16a34a" stroke-width="2"/>
+                <path d="M6 12h12" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="9" cy="12" r="1.5" fill="#16a34a"/>
+                <circle cx="15" cy="12" r="1.5" fill="#16a34a"/>
+              </svg>
+              <span>Progetto EcoFoodChain</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="container" role="main">
+      <h1 id="pageTitle">Scegli un modulo dell’ecosistema</h1>
+
+      <!-- Vista launcher -->
+      <section id="launcher" class="grid" aria-label="Applicazioni disponibili">
+
+        <!-- 1) Filiera360 -->
+        <article class="card" aria-labelledby="lab-filiera" aria-describedby="desc-filiera">
+          <div class="icon icon--blue">
+            <img src="img/icon-filiera360.svg" alt="Icona Filiera360">
+          </div>
+          <div class="meta">
+            <h3 id="lab-filiera">Filiera360</h3>
+            <p id="desc-filiera">Blockchain per la tracciabilità del prodotto</p>
+          </div>
+          <div class="right">
+            <span class="chip"><span class="dot"></span> Online</span>
+            <a class="btn" href="/filiera360/" data-link="/filiera360/">Apri</a>
+          </div>
+        </article>
+
+        <!-- 2) Refood -->
+        <article class="card" aria-labelledby="lab-refood" aria-describedby="desc-refood">
+          <div class="icon icon--orange">
+            <img src="img/icon-refood.svg" alt="Icona Refood">
+          </div>
+          <div class="meta">
+            <h3 id="lab-refood">Refood</h3>
+            <p id="desc-refood">Riutilizzo sostenibile delle eccedenze alimentari</p>
+          </div>
+          <div class="right">
+            <span class="chip"><span class="dot"></span> Online</span>
+            <a class="btn" href="#" data-link="#">Apri</a>
+          </div>
+        </article>
+
+        <!-- 3) SmartField -->
+        <article class="card" aria-labelledby="lab-smart" aria-describedby="desc-smart">
+          <div class="icon icon--teal">
+            <img src="img/icon-smartfield.svg" alt="Icona SmartField">
+          </div>
+          <div class="meta">
+            <h3 id="lab-smart">SmartField</h3>
+            <p id="desc-smart">Chatbot di supporto alle colture basato su sensori</p>
+          </div>
+          <div class="right">
+            <span class="chip"><span class="dot"></span> Online</span>
+            <a class="btn" href="#" data-link="#">Apri</a>
+          </div>
+        </article>
+
+        <!-- 4) VR Accademy -->
+        <article class="card" aria-labelledby="lab-vr" aria-describedby="desc-vr">
+          <div class="icon icon--purple">
+            <img src="img/icon-vr.svg" alt="Icona VR Accademy">
+          </div>
+          <div class="meta">
+            <h3 id="lab-vr">VR Accademy</h3>
+            <p id="desc-vr">Formazione del personale specializzato</p>
+          </div>
+          <div class="right">
+            <span class="chip"><span class="dot"></span> Online</span>
+            <a class="btn" href="#" data-link="#">Apri</a>
+          </div>
+        </article>
+
+        <!-- 5) Metaverso -->
+        <article class="card" aria-labelledby="lab-meta" aria-describedby="desc-meta">
+          <div class="icon icon--green">
+            <img src="img/icon-metaverso.svg" alt="Icona Metaverso">
+          </div>
+          <div class="meta">
+            <h3 id="lab-meta">Metaverso</h3>
+            <p id="desc-meta">Esperienza immersiva nella realtà agricola</p>
+          </div>
+          <div class="right">
+            <span class="chip"><span class="dot"></span> Online</span>
+            <a class="btn" href="/metaverso/" data-link="/metaverso/">Apri</a>
+          </div>
+        </article>
+
+        <!-- 6) Guida 3D (ROSSO) -->
+        <article class="card" aria-labelledby="lab-guide" aria-describedby="desc-guide">
+          <div class="icon icon--red">
+            <img src="img/icon-guida3d.svg" alt="Icona Guida 3D">
+          </div>
+          <div class="meta">
+            <h3 id="lab-guide">Guida 3D</h3>
+            <p id="desc-guide">Visualizzazione del ciclo di vita dei prodotti</p>
+          </div>
+          <div class="right">
+            <span class="chip"><span class="dot"></span> Online</span>
+            <a class="btn" href="#" data-link="#">Apri</a>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Vista info -->
+      <section id="infoPage" class="info-wrap" aria-label="Informazioni">
+        <div class="backline">
+          <a id="backLink" class="backlink" href="#">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M10 19l-7-7 7-7" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 12h18" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>Indietro</span>
+          </a>
+        </div>
+
+        <div class="info-card" role="region" aria-labelledby="infoTitle">
+          <div class="brand-logo" id="brandLogo" aria-hidden="true">
+            <!-- immagine/brand inserita via JS -->
+          </div>
+          <div>
+            <h2 id="infoTitle" class="info-title"></h2>
+            <p id="infoDesc" class="info-desc"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">Architettura EcoFoodChain: tutti i microservizi sono indipendenti.</footer>
+  </div>
+
+  <!-- (opzionale: questa seconda inclusione è ridondante, puoi rimuoverla) -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

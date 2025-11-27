@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filiera-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filiera-backend
+  template:
+    metadata:
+      labels:
+        app: filiera-backend
+    spec:
+      containers:
+      - name: filiera-backend
+        image: ecofoodchain/filiera-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000

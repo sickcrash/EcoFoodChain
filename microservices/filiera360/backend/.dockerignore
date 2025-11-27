@@ -1,0 +1,31 @@
+# Python cache
+__pycache__/
+*.mo
+*.pyc
+*.swp
+*.swo
+*.~
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Environment variables
+*.env
+
+.git
+*.gitignore
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+*.idea
+.vscode
+
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose-dev.yml
+
+Procfile*
