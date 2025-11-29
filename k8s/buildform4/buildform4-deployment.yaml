@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buildform4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: buildform4
+  template:
+    metadata:
+      labels:
+        app: buildform4
+    spec:
+      containers:
+        - name: buildform4
+          image: ecofoodchain/buildform4:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80

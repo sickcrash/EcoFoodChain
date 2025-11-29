@@ -32,9 +32,15 @@ spec:
         pathType: ImplementationSpecific
         backend:
           service:
-            # Assicurati che esista un Service k8s chiamato 'refood-frontend'
-            # e che punti al deployment corretto
             name: refood-frontend 
+            port:
+              number: 80
+      # Regola 4: Tutto ciò che inizia con /3dguide va al servizio 3dguide (buildform4)
+      - path: /3dguide(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: buildform4
             port:
               number: 80
       # Tutto il resto va al frontend
