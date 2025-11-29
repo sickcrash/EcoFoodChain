@@ -1,0 +1,8 @@
+node_modules/
+logs/
+uploads/
+coverage/
+dist/
+run_tests.sh
+scripts/
+tests/

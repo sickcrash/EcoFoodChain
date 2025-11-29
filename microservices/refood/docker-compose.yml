@@ -1,0 +1,70 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: docker/database/Dockerfile
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PGDATABASE:-refood}
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-postgres}
+      DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL:-admin@refood.local}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-ChangeMe123!}
+    ports:
+      - "${PGPORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      API_PREFIX: ${API_PREFIX:-/api/v1}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${PGDATABASE:-refood}
+      PGUSER: ${PGUSER:-postgres}
+      PGPASSWORD: ${PGPASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-change_me}
+      DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL:-adminBartolo@gmail.com}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-adminBartolo}
+      ENABLE_SCHEDULER: ${ENABLE_SCHEDULER:-true}
+      ENABLE_WEBSOCKET: ${ENABLE_WEBSOCKET:-true}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      GOOGLE_GEOCODING_API_KEY: ${GOOGLE_GEOCODING_API_KEY:-}
+      LOAD_ROOT_ENV: "false"
+      LOG_TO_FILES: "false"
+      UPLOADS_DIR: /data/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend_uploads:/data/uploads
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://localhost:3000/api/v1}
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+      - "80:80" # Opzionale: consente anche http://localhost/ senza specificare la porta
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  db_data:
+  backend_uploads:

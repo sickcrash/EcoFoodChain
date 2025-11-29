@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#4CAF50" />
+    <title>ReFood</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const root = document.documentElement;
+        const body = document.body;
+        try {
+          if (root.style.setProperty) {
+            root.style.setProperty('text-size-adjust', '100%');
+          }
+          root.style.webkitTextSizeAdjust = '100%';
+          root.style.msTextSizeAdjust = '100%';
+          root.style.userSelect = 'text';
+          root.style.webkitUserSelect = 'text';
+          if (body) {
+            body.style.userSelect = 'text';
+            body.style.webkitUserSelect = 'text';
+          }
+        } catch (err) {
+          console.warn('text-size-adjust setup failed', err);
+        }
+
+        const patchA11y = () => {
+          document.querySelectorAll("svg[role='img']").forEach(svg => {
+            svg.setAttribute('role', 'presentation');
+            svg.setAttribute('aria-hidden', 'true');
+            svg.removeAttribute('tabindex');
+          });
+          document.querySelectorAll('[aria-hidden="true"] button, [aria-hidden="true"] [href], [aria-hidden="true"] [tabindex]').forEach(node => {
+            node.setAttribute('tabindex', '-1');
+            node.setAttribute('aria-hidden', 'true');
+          });
+        };
+
+        patchA11y();
+        const observer = new MutationObserver(patchA11y);
+        observer.observe(document.body, { childList: true, subtree: true });
+      });
+    </script>
+  </head>
+  <body>
+    <noscript>Per utilizzare ReFood abilitare JavaScript.</noscript>
+    <div id="root"></div>
+  </body>
+  </html>

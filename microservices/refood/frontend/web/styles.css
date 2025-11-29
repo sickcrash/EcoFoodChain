@@ -1,0 +1,7 @@
+/* Global web overrides for compatibility and a11y */
+
+/* Make focus outlines visible for keyboard users */
+:focus-visible { outline: 2px solid #4CAF50; outline-offset: 2px; }
+
+/* Reduce tap highlight on mobile web */
+* { -webkit-tap-highlight-color: rgba(0,0,0,0.1); }

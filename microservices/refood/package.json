@@ -1,0 +1,28 @@
+{
+  "name": "refood-root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Root workspace for ReFood (backend and tests)",
+  "scripts": {
+    "start": "npm --prefix backend start",
+    "dev": "npm --prefix backend run dev",
+    "test": "npm --prefix backend test",
+    "test:unit": "npm --prefix backend test -- ../tests/unit",
+    "test:integration": "npm --prefix backend test -- ../tests/integration",
+    "test:cov": "npm --prefix backend test -- --coverage --coverageReporters=text-summary,html",
+    "test:ci": "cross-env JEST_JUNIT_OUTPUT=reports/jest-junit.xml npm --prefix backend test -- --runInBand --reporters=default --reporters=jest-junit",
+    "e2e": "npm --prefix frontend run e2e",
+    "perf:rate:auth": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/performance/run-k6-auth.ps1 -Script tests/performance/k6/constant-rate.js -SummaryPrefix rate_auth",
+    "perf:breakpoint:auth": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/performance/run-k6-auth.ps1 -Script tests/performance/k6/breakpoint.js -SummaryPrefix break_auth",
+    "perf:ramping": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/performance/run-k6.ps1 -Script tests/performance/scenarios/main.js -SummaryPrefix ramp",
+    "perf:soak": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/performance/run-k6.ps1 -Script tests/performance/scenarios/soak.js -SummaryPrefix soak",
+    "canary": "npm run test:integration && npm run perf:ramping",
+    "test:local": "npm --prefix backend run test:local"
+  },
+  "author": "Refood Team",
+  "license": "MIT",
+  "devDependencies": {
+    "axios": "^1.12.2",
+    "cross-env": "^7.0.3"
+  }
+}

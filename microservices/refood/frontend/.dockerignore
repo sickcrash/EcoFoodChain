@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.expo
+.expo-shared
+Dockerfile
+.dockerignore
+playwright-report
+test-results
+tests
+dist
+.DS_Store
+.env
+.env.*
+*.log

@@ -1,0 +1,114 @@
+# Dipendenze
+node_modules/
+*/node_modules/
+
+# File di costruzione
+dist/
+build/
+*/dist/
+*/build/
+
+# File di cache
+.cache/
+.expo/
+.next/
+web-build/
+*.tsbuildinfo
+
+# File di ambiente
+# Ignora tutti i file .env ovunque nel repo
+.env
+**/.env
+.env.local
+**/.env.local
+.env.development.local
+**/.env.development.local
+.env.test.local
+**/.env.test.local
+.env.production.local
+**/.env.production.local
+.env*.local
+**/.env*.local
+backend/.env
+
+# File di log
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cartelle di sistema
+.DS_Store
+Thumbs.db
+
+# File specifici di Expo
+expo-env.d.ts
+
+# File di Android/iOS
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+*.apk
+*.aab
+*.ipa
+
+# File di IDE e editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Altri file binari o generati
+coverage/
+**/coverage/
+backend/coverage-summary.txt
+*.sqlite
+*.db
+
+# Cartelle specifiche del progetto
+/app-example/
+/.serverless/
+
+# File di backup e temporanei
+*.bak
+*.tmp
+test-file.txt
+handleSearchChange.txt
+
+# File di token e credenziali
+test-token.txt
+token.json
+
+# Risultati di test, report e file temporanei
+test_results/
+tests/results/
+tests/performance/results/
+unit-tests-temp/
+
+# Backup e file di lavoro
+*_backup/
+backend_backup/
+backend/logs/
+backend/uploads/
+frontend/test-results/
+frontend/playwright-report/
+
+# File SQL obsoleti o di test
+test_aggiornamento_lotti.sql
+*_old.sql
+*_obsolete.sql
+*_deprecated.sql
+backend\src\database\schema_fix.sql
+backend\src\database\schema_monitor.sql
+
+# File specifici identificati come inutili
+database.sqlite
+debug.js
+test-data-generator.js
+Refood_documentazione.md.bak
+refood_updated_performance.md
+generate-token.js 
