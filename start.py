@@ -83,6 +83,13 @@ def start_infrastructure():
     run_command(["kind", "load", "docker-image", "mongo:5.0", "--name", "ecofood-cluster"])
     
 
+    run_command(["docker", "build", "-t", "ecofoodchain/refood-frontend:latest", "./microservices/refood/frontend"])
+    run_command(["docker", "build", "-t", "ecofoodchain/refood-backend:latest", "./microservices/refood/backend"])
+    run_command(["docker", "build", "-t", "ecofoodchain/refood-db:latest", "./microservices/refood"])
+    run_command(["kind", "load", "docker-image", "ecofoodchain/refood-frontend:latest", "--name", "ecofood-cluster"])
+    run_command(["kind", "load", "docker-image", "ecofoodchain/refood-backend:latest", "--name", "ecofood-cluster"])
+    run_command(["kind", "load", "docker-image", "ecofoodchain/refood-db:latest", "--name", "ecofood-cluster"])
+
 
     print("   - Applying Manifests...")
     run_command(["kubectl", "apply", "-f", "k8s/", "--recursive"])

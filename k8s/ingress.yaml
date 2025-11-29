@@ -27,6 +27,16 @@ spec:
             name: filiera-frontend
             port:
               number: 80
+      # Regola 3: Tutto ciò che inizia con /refood va al servizio refood
+      - path: /refood(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            # Assicurati che esista un Service k8s chiamato 'refood-frontend'
+            # e che punti al deployment corretto
+            name: refood-frontend 
+            port:
+              number: 80
       # Tutto il resto va al frontend
       - path: /()(.*)
         pathType: ImplementationSpecific

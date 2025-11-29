@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: refood-db
+spec:
+  selector:
+    app: refood-db
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5432
+  type: ClusterIP

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: refood-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: refood-frontend
+  template:
+    metadata:
+      labels:
+        app: refood-frontend
+    spec:
+      containers:
+      - name: refood-frontend
+        image: ecofoodchain/refood-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80

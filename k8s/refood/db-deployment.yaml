@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: refood-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: refood-db
+  template:
+    metadata:
+      labels:
+        app: refood-db
+    spec:
+      containers:
+      - name: refood-db
+        image: ecofoodchain/refood-db:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
