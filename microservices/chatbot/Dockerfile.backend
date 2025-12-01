@@ -1,0 +1,17 @@
+FROM python:3.13
+
+WORKDIR /app
+
+# Copio i requirements
+COPY src/pages/chatbot/requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copio il codice del chatbot
+COPY src/pages/chatbot/ .
+
+# Espongo la porta Flask
+EXPOSE 5000
+
+# Avvio il server Flask dal file corretto
+CMD ["python", "app.py"]

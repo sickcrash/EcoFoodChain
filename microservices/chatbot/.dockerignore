@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+Dockerfile*
+docker-compose.yml
+.git
+.gitignore
+dist
+build
+.env
+__pycache__
+*.pyc
+*.pyo
+*.pyd

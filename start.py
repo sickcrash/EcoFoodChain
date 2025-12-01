@@ -70,9 +70,10 @@ def start_infrastructure():
     run_command(["docker", "build", "-t", "ecofoodchain/frontend:latest", "./microservices/frontend"])
     run_command(["kind", "load", "docker-image", "ecofoodchain/frontend:latest", "--name", "ecofood-cluster"])
 
+    
     run_command(["docker", "build", "-t", "ecofoodchain/metaverso:latest", "./microservices/metaverso"])
     run_command(["kind", "load", "docker-image", "ecofoodchain/metaverso:latest", "--name", "ecofood-cluster"])
-    
+
     run_command(["docker", "build", "-t", "ecofoodchain/filiera-frontend:latest", "./microservices/filiera360/frontend"])
     run_command(["docker", "build", "-t", "ecofoodchain/filiera-backend:latest", "./microservices/filiera360/backend"])
     run_command(["docker", "build", "-t", "ecofoodchain/filiera-middleware:latest", "./microservices/filiera360/blockchain/chaincode/myapp"])
@@ -91,10 +92,18 @@ def start_infrastructure():
 
     run_command(["docker", "build", "-t", "ecofoodchain/buildform4:latest", "./microservices/buildform4"])
     run_command(["kind", "load", "docker-image", "ecofoodchain/buildform4:latest", "--name", "ecofood-cluster"])
+    
+    run_command(["docker", "build", "-t", "ecofoodchain/chatbot-frontend:latest", "-f",  "./microservices/chatbot/Dockerfile.frontend", "./microservices/chatbot"])
+    run_command(["kind", "load", "docker-image", "ecofoodchain/chatbot-frontend:latest", "--name", "ecofood-cluster"])
+    run_command(["docker", "build", "-t", "ecofoodchain/chatbot-backend:latest", "-f", "./microservices/chatbot/Dockerfile.backend", "./microservices/chatbot"])
+    run_command(["kind", "load", "docker-image", "ecofoodchain/chatbot-backend:latest", "--name", "ecofood-cluster"])
 
 
     print("   - Applying Manifests...")
     run_command(["kubectl", "apply", "-f", "k8s/", "--recursive"])
+    # to ignore other services for now:
+    #run_command(["kubectl", "apply", "-f", "k8s/"])
+    #run_command(["kubectl", "apply", "-f", "k8s/chatbot/"])
 
     print("   - Installing Ingress Controller (Nginx)...")
     run_command(["kubectl", "apply", "-f", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml"], allow_fail=True)
@@ -108,6 +117,8 @@ def start_infrastructure():
                  "--timeout=90s"], allow_fail=True)
     
     cmd = ["kubectl", "port-forward", "--namespace=ingress-nginx", "service/ingress-nginx-controller", "8080:80"]
+    # if this part fails, don't destroy the infrastructure: wait some minutes and print:
+    # kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 8080:80
     subprocess.run(cmd, check=True)
 
 def destroy_infrastructure():

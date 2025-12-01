@@ -1,0 +1,21 @@
+[
+  {
+    "items": [
+      {
+        "placeholder": "Email",
+        "name": "email",
+        "type": "email",
+        "autocomplete": "email",
+        "required": true,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      {
+        "placeholder": "Password",
+        "name": "password",
+        "type": "password",
+        "autocomplete": "password",
+        "required": true
+      }
+    ]
+  }
+]

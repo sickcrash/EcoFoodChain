@@ -43,6 +43,14 @@ spec:
             name: buildform4
             port:
               number: 80
+      # Regola 4: Tutto ciò che inizia con /chatbot va al servizio chatbot (smartfield)
+      - path: /chatbot(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: chatbot-frontend
+            port:
+              number: 80
       # Tutto il resto va al frontend
       - path: /()(.*)
         pathType: ImplementationSpecific

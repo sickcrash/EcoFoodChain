@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbot-backend
+  template:
+    metadata:
+      labels:
+        app: chatbot-backend
+    spec:
+      containers:
+      - name: chatbot-ackend
+        image: ecofoodchain/chatbot-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
