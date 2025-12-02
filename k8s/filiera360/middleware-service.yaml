@@ -7,6 +7,6 @@ spec:
     app: filiera-middleware
   ports:
     - protocol: TCP
-      port: 300
-      targetPort: 300
+      port: 3000
+      targetPort: 3000
   type: ClusterIP

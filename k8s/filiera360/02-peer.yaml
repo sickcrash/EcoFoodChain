@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: peer0-org1
+spec:
+  selector:
+    app: peer0-org1
+  ports:
+    - name: grpc
+      port: 7051
+      targetPort: 7051
+    - name: chaincode-listen
+      port: 7052
+      targetPort: 7052
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: peer0-org1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: peer0-org1
+  template:
+    metadata:
+      labels:
+        app: peer0-org1
+    spec:
+      containers:
+      - name: peer0-org1
+        image: hyperledger/fabric-peer:2.5
+        workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+        command: ["peer", "node", "start"]
+        env:
+        - name: CORE_PEER_ID
+          value: "peer0.org1.example.com"
+        - name: CORE_PEER_ADDRESS
+          value: "peer0-org1:7051"
+        - name: CORE_PEER_LISTENADDRESS
+          value: "0.0.0.0:7051"
+        - name: CORE_PEER_CHAINCODELISTENADDRESS
+          value: "0.0.0.0:7052"
+        - name: CORE_PEER_LOCALMSPID
+          value: "Org1MSP"
+        - name: CORE_PEER_MSPCONFIGPATH
+          value: "/fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp"
+        - name: CORE_VM_ENDPOINT
+          value: "unix:///host/var/run/docker.sock"
+        - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
+          value: "peer0-org1:7051"
+        - name: CORE_PEER_GOSSIP_USELEADERELECTION
+          value: "true"
+        - name: CORE_PEER_GOSSIP_ORGLEADER
+          value: "false"
+        # --- ABILITAZIONE TLS ---
+        - name: CORE_PEER_TLS_ENABLED
+          value: "true"
+        - name: CORE_PEER_TLS_CERT_FILE
+          value: "/fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt"
+        - name: CORE_PEER_TLS_KEY_FILE
+          value: "/fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key"
+        - name: CORE_PEER_TLS_ROOTCERT_FILE
+          value: "/fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"
+        volumeMounts:
+        - mountPath: /fabric
+          name: fabric-data
+        - mountPath: /host/var/run/docker.sock
+          name: dockersock
+      volumes:
+      - name: fabric-data
+        persistentVolumeClaim:
+          claimName: fabric-pvc
+      - name: dockersock
+        hostPath:
+          path: /var/run/docker.sock
