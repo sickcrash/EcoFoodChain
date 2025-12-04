@@ -8,7 +8,7 @@ Organizations:
       Writers: { Type: Signature, Rule: "OR('OrdererMSP.member')" }
       Admins:  { Type: Signature, Rule: "OR('OrdererMSP.admin')" }
     OrdererEndpoints:
-      - orderer.example.com:7050
+      - orderer:7050
 
   - &Org1
     Name: Org1MSP
@@ -18,8 +18,9 @@ Organizations:
       Readers: { Type: Signature, Rule: "OR('Org1MSP.admin', 'Org1MSP.peer', 'Org1MSP.client')" }
       Writers: { Type: Signature, Rule: "OR('Org1MSP.admin', 'Org1MSP.client')" }
       Admins:  { Type: Signature, Rule: "OR('Org1MSP.admin')" }
+      Endorsement: { Type: Signature, Rule: "OR('Org1MSP.peer')" }
     AnchorPeers:
-      - Host: peer0-org1 # Nome del servizio K8s
+      - Host: peer0-org1
         Port: 7051
 
 Capabilities:
@@ -33,9 +34,13 @@ Capabilities:
 Application: &ApplicationDefaults
   Organizations:
   Policies:
-    Readers: { Type: Signature, Rule: "OR('Org1MSP.member')" }
-    Writers: { Type: Signature, Rule: "OR('Org1MSP.member')" }
-    Admins:  { Type: Signature, Rule: "OR('Org1MSP.admin')" }
+    Readers: { Type: ImplicitMeta, Rule: "ANY Readers" }
+    Writers: { Type: ImplicitMeta, Rule: "ANY Writers" }
+    Admins:  { Type: ImplicitMeta, Rule: "MAJORITY Admins" }
+    # --- LE RIGHE MANCANTI CHE CAUSAVANO L'ERRORE ---
+    LifecycleEndorsement: { Type: ImplicitMeta, Rule: "MAJORITY Endorsement" }
+    Endorsement: { Type: ImplicitMeta, Rule: "MAJORITY Endorsement" }
+    # ------------------------------------------------
   Capabilities:
     <<: *ApplicationCapabilities
 
@@ -43,7 +48,7 @@ Orderer: &OrdererDefaults
   OrdererType: etcdraft
   EtcdRaft:
     Consenters:
-      - Host: orderer.example.com
+      - Host: orderer
         Port: 7050
         ClientTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
         ServerTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt

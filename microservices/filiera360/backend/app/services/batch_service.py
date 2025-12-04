@@ -3,13 +3,15 @@ import requests
 from ..utils.http_client import http_get, http_post
 from ..utils.permissions_utils import required_permissions
 from ..database_mongo.queries.users_queries import get_user_by_email, find_producer_by_operator
+import os
+MIDDLEWARE_BASE_URL = os.environ.get('MIDDLEWARE_URL', 'http://filiera-middleware:3000')
 
 def get_batch_service(batch_id):
     if not batch_id:
         return {'message': 'Batch ID is required'}, 400
 
     try:
-        response = http_get(f'http://middleware:3000/readBatch?batchId={batch_id}')
+        response = http_get(f'{MIDDLEWARE_BASE_URL}/readBatch?batchId={batch_id}')
         if response.status_code == 200:
             return response.json(), 200
         else:
@@ -23,7 +25,7 @@ def get_batch_history_service(batch_id):
         return {'message': 'Batch ID is required'}, 400
 
     try:
-        response = http_get(f'http://middleware:3000/batchHistory?batchId={batch_id}')
+        response = http_get(f'{MIDDLEWARE_BASE_URL}/batchHistory?batchId={batch_id}')
         if response.status_code == 200:
             return response.json(), 200
         else:
@@ -82,7 +84,7 @@ def upload_batch_service(user_email, batch_data):
     return _process_batch(
         user_email,
         batch_data,
-        endpoint='http://middleware:3000/uploadBatch',
+        endpoint='{MIDDLEWARE_BASE_URL}/uploadBatch',
         success_message='Batch uploaded successfully!'
     )
 
@@ -90,7 +92,7 @@ def update_batch_service(user_email, batch_data):
     return _process_batch(
         user_email,
         batch_data,
-        endpoint='http://middleware:3000api/batch/updateBatch',
+        endpoint='{MIDDLEWARE_BASE_URL}/api/batch/updateBatch',
         success_message='Batch updated successfully!'
     )
 
@@ -107,7 +109,7 @@ def verify_product_authorization(user, product_id):
 
     # Chiamata al middleware
     try:
-        response = http_get(f"http://middleware:3000/readProduct?productId={product_id}")
+        response = http_get(f"{MIDDLEWARE_BASE_URL}/readProduct?productId={product_id}")
         if response.status_code != 200:
             return False, ({"message": "Failed to get product from middleware."}, 500)
 

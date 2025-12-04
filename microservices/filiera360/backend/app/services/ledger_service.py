@@ -1,6 +1,8 @@
 import json
 
 from ..utils.http_client import http_post
+import os
+MIDDLEWARE_BASE_URL = os.environ.get('MIDDLEWARE_URL', 'http://filiera-middleware:3000')
 
 def init_ledger_service():
     # Leggi il file sampleData.json
@@ -15,7 +17,7 @@ def init_ledger_service():
     errors = []
     for product in products:
         try:
-            response = http_post('http://middleware:3000/uploadProduct', json=product)
+            response = http_post('{MIDDLEWARE_BASE_URL}/uploadProduct', json=product)
             if response.status_code != 200:
                 errors.append({
                     "product_id": product.get("ID"),

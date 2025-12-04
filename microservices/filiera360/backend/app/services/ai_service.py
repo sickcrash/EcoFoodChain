@@ -1,6 +1,7 @@
 import requests
-
 from ..utils.chatbot import chatbot_response
+import os
+MIDDLEWARE_BASE_URL = os.environ.get('MIDDLEWARE_URL', 'http://filiera-middleware:3000')
 
 # Variabile globale per salvare il productinfo associato all'ultimo scan
 _cached_product_info = {}
@@ -8,7 +9,7 @@ _cached_product_info = {}
 def scan_service(item_code):
     global _cached_product_info
     try:
-        response = requests.get(f'http://middleware:3000/readProduct?productId={item_code}')
+        response = requests.get(f'{MIDDLEWARE_BASE_URL}/readProduct?productId={item_code}')
         if response.status_code == 200:
             productinfo = response.json()
             _cached_product_info[item_code] = productinfo

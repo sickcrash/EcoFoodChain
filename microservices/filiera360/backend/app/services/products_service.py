@@ -11,10 +11,12 @@ from ..database_mongo.queries.liked_queries import get_liked_products_by_user, l
 from ..database_mongo.queries.products_queries import create_product
 from ..database_mongo.queries.recently_searched_queries import add_recently_searched
 from ..database_mongo.queries.users_queries import get_user_by_email
+import os
+MIDDLEWARE_BASE_URL = os.environ.get('MIDDLEWARE_URL', 'http://filiera-middleware:3000')
 
 def get_product_service(product_id):
     try:
-        response = http_get(f'http://middleware:3000/readProduct?productId={product_id}')
+        response = http_get(f'{MIDDLEWARE_BASE_URL}/readProduct?productId={product_id}')
         if response.status_code == 200:
             return response.json()
         return {"error": f"Failed to fetch product, status {response.status_code}"}
@@ -23,7 +25,7 @@ def get_product_service(product_id):
 
 def get_product_history_service(product_id):
     try:
-        response = http_get(f'http://middleware:3000/productHistory?productId={product_id}')
+        response = http_get(f'{MIDDLEWARE_BASE_URL}/productHistory?productId={product_id}')
         print(f"JS server responded with status {response.status_code}")
 
         if response.status_code == 200:
@@ -55,7 +57,7 @@ def upload_product_service(product_data, user_identity):
 
     # Invio al middleware esterno
     try:
-        response = http_post('http://middleware:3000/uploadProduct', json=product_data)
+        response = http_post('{MIDDLEWARE_BASE_URL}/uploadProduct', json=product_data)
     except Exception as e:
         return {"message": "Error connecting to middleware.", "error": str(e)}, 500
 
@@ -104,7 +106,7 @@ def update_product_service(product_data, user_identity):
     try:
         # --- Chiamata al middleware esterno ---
         response = http_post(
-            "http://middleware:3000api/product/updateProduct",
+            "{MIDDLEWARE_BASE_URL}/api/product/updateProduct",
             json=product_data
         )
     except requests.RequestException as e:
@@ -234,7 +236,7 @@ def add_sensor_data_service(sensor_data, manufacturer):
         return {"body": verification_result[0], "status": verification_result[1]}
 
     try:
-        response = http_post(f'http://middleware:3000api/product/sensor', json=sensor_data)
+        response = http_post(f'{MIDDLEWARE_BASE_URL}/api/product/sensor', json=sensor_data)
         if response.status_code == 200:
             return {"body": {"message": "Product uploaded successfully!"}, "status": 200}
         return {"body": {"message": "Failed to upload product."}, "status": 500}
@@ -251,7 +253,7 @@ def add_movement_data_service(movement_data, manufacturer):
         return {"body": verification_result[0], "status": verification_result[1]}
 
     try:
-        response = http_post(f'http://middleware:3000api/product/movement', json=movement_data)
+        response = http_post(f'{MIDDLEWARE_BASE_URL}/api/product/movement', json=movement_data)
         if response.status_code == 200:
             return {"body": {"message": "Product uploaded successfully!"}, "status": 200}
         return {"body": {"message": "Failed to upload product."}, "status": 500}
@@ -269,7 +271,7 @@ def add_certification_data_service(certification_data, manufacturer):
         return {"body": verification_result[0], "status": verification_result[1]}
 
     try:
-        response = http_post(f'http://middleware:3000api/product/certification', json=certification_data)
+        response = http_post(f'{MIDDLEWARE_BASE_URL}/api/product/certification', json=certification_data)
         if response.status_code == 200:
             return {"body": {"message": "Product uploaded successfully!"}, "status": 200}
         return {"body": {"message": "Failed to upload product."}, "status": 500}
@@ -279,7 +281,7 @@ def add_certification_data_service(certification_data, manufacturer):
 
 def verify_product_compliance_service(compliance_data):
     try:
-        response = http_post(f'http://middleware:3000api/product/verifyProductCompliance', json=compliance_data)
+        response = http_post(f'{MIDDLEWARE_BASE_URL}/api/product/verifyProductCompliance', json=compliance_data)
         if response.status_code == 200:
             return {"body": {"message": "Product is compliant!"}, "status": 200}
         return {"body": {"message": "Product is not compliant"}, "status": 500}
@@ -289,7 +291,7 @@ def verify_product_compliance_service(compliance_data):
 
 def get_all_movements_service(product_id):
     try:
-        response = http_get(f'http://middleware:3000api/product/getMovements?productId={product_id}')
+        response = http_get(f'{MIDDLEWARE_BASE_URL}/api/product/getMovements?productId={product_id}')
         if response.status_code == 200:
             return {"body": response.json(), "status": 200}
         return {"body": {"message": "Failed to get movements"}, "status": 500}
@@ -298,7 +300,7 @@ def get_all_movements_service(product_id):
 
 def get_all_sensor_data_service(product_id):
     try:
-        response = http_get(f'http://middleware:3000api/product/getSensorData?productId={product_id}')
+        response = http_get(f'{MIDDLEWARE_BASE_URL}/api/product/getSensorData?productId={product_id}')
         if response.status_code != 200:
             return {"body": {"message": "Failed to get sensor data from middleware"}, "status": 500}
 
@@ -362,7 +364,7 @@ def _get_databoom_description(url, headers):
 
 def get_all_certifications_service(product_id):
     try:
-        response = http_get(f'http://middleware:3000api/product/getCertifications?productId={product_id}')
+        response = http_get(f'{MIDDLEWARE_BASE_URL}/api/product/getCertifications?productId={product_id}')
         if response.status_code == 200:
             return {"body": response.json(), "status": 200}
         return {"body": {"message": "Failed to get certifications"}, "status": 500}

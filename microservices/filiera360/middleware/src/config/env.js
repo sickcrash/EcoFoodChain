@@ -1,4 +1,5 @@
 const path = require('node:path');
+const fs = require('node:fs');
 
 /**
  * Environment configuration utility
@@ -10,59 +11,45 @@ function envOrDefault(key, defaultValue) {
 
 // Channel and chaincode configuration
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
-const chaincodeName = envOrDefault('CHAINCODE_NAME', 'basic');
+const chaincodeName = envOrDefault('CHAINCODE_NAME', 'filiera360');
 const mspId = envOrDefault('MSP_ID', 'Org1MSP');
 
-// Path to crypto materials
-const cryptoPath = envOrDefault(
-    'CRYPTO_PATH',
-    path.resolve(
-        __dirname,
-        '..',
-        '..',
-        'blockchain',
-        'fabric-samples',
-        'test-network',
-        'organizations',
-        'peerOrganizations',
-        'org1.example.com'
-    )
-);
+// Determinazione del Path Base (Locale vs Kubernetes)
+// Se esiste la cartella /fabric, siamo nel cluster K8s. Altrimenti siamo in locale.
+const isK8s = fs.existsSync('/fabric');
+const basePath = isK8s 
+    ? '/fabric/crypto-config/peerOrganizations/org1.example.com'
+    : path.resolve(__dirname, '..', '..', 'blockchain', 'fabric-samples', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com');
 
-// Path to user private key directory
+console.log(`[Config] Environment: ${isK8s ? 'KUBERNETES' : 'LOCAL'}`);
+console.log(`[Config] Base Path: ${basePath}`);
+
+// 3. Path dei Materiali Crittografici (Crypto Materials)
+const cryptoPath = envOrDefault('CRYPTO_PATH', basePath);
+// Path alla chiave privata dell'utente (User1)
 const keyDirectoryPath = envOrDefault(
     'KEY_DIRECTORY_PATH',
-    path.resolve(
-        cryptoPath,
-        'users',
-        'User1@org1.example.com',
-        'msp',
-        'keystore'
-    )
+    path.resolve(cryptoPath, 'users', 'User1@org1.example.com', 'msp', 'keystore')
 );
 
-// Path to user certificate directory
+// Path al certificato dell'utente (User1)
 const certDirectoryPath = envOrDefault(
     'CERT_DIRECTORY_PATH',
-    path.resolve(
-        cryptoPath,
-        'users',
-        'User1@org1.example.com',
-        'msp',
-        'signcerts'
-    )
+    path.resolve(cryptoPath, 'users', 'User1@org1.example.com', 'msp', 'signcerts')
 );
 
-// Path to peer tls certificate
+// Path al certificato TLS del Peer (per verificare la connessione sicura)
 const tlsCertPath = envOrDefault(
     'TLS_CERT_PATH',
-    path.resolve(cryptoPath, 'peers', 'peer0.org1.example.com', 'tls', 'ca.crt')
+    // Cambia il path da /peers/.../ca.crt a /tlsca/.../tlsca.org1.example.com-cert.pem
+    path.resolve(cryptoPath, 'tlsca', 'tlsca.org1.example.com-cert.pem') 
 );
 
-// Gateway peer endpoint
-const peerEndpoint = envOrDefault('PEER_ENDPOINT', '/middleware');
+// 4. Configurazione Endpoint Peer
+// In K8s usiamo il nome DNS del servizio (peer0-org1) e la porta 7051
+const peerEndpoint = envOrDefault('PEER_ENDPOINT', 'peer0-org1:7051');
 
-// Gateway peer SSL host name override
+// Host Alias per TLS (deve combaciare con il SANS del certificato)
 const peerHostAlias = envOrDefault('PEER_HOST_ALIAS', 'peer0.org1.example.com');
 
 /**

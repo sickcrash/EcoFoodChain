@@ -4,6 +4,7 @@ import subprocess
 import sys
 import shutil
 import argparse
+import re
 
 # --- CONFIGURATION ---
 ENV_VARS = os.environ.copy()
@@ -14,6 +15,7 @@ ENV_VARS["AWS_DEFAULT_REGION"] = "eu-central-1"
 ENV_VARS["AWS_ENDPOINT_URL"] = "http://localhost:4566"
 # Fabric Network Paths
 NETWORK_PATH = os.path.join(".", "microservices", "filiera360", "network")
+CHAINCODE_PATH = os.path.join(".", "microservices", "filiera360", "chaincode")
 
 def run_command(command, allow_fail=False):
     """Executes a shell command. If allow_fail is True, errors are ignored."""
@@ -75,39 +77,136 @@ def generate_fabric_artifacts():
     print("✅ Blockchain Artifacts Generated.")
 
 def setup_blockchain_channel():
-    """
-    Initializes the channel after the pods are running.
-    """
     print("\n🔗 [Blockchain] Initializing Channel & Smart Contract...")
     
-    # 1. Wait for Peer to be ready
-    print("   - Waiting for peer0-org1 to be ready...")
+    # 1. Wait for Peer AND Orderer to be ready
+    print("   - Waiting for peer0-org1 and orderer...")
     run_command(["kubectl", "wait", "--for=condition=ready", "pod", "-l", "app=peer0-org1", "--timeout=90s"])
+    run_command(["kubectl", "wait", "--for=condition=ready", "pod", "-l", "app=orderer", "--timeout=90s"]) # AGGIUNTO
 
     orderer_ca = "/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"
+    
+    # --- FIX: Path all'MSP dell'ADMIN ---
+    # In k8s il path parte da /fabric/crypto-config/...
+    admin_msp = "/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp"
+
+    # Sleep di sicurezza per assestamento rete
+    time.sleep(5)
 
     # 2. Esecuzione Comandi (Create -> Join -> Anchor Update)
     print("   - Creating & Joining Channel (with TLS)...")
     
-    # Nota: Usiamo 'sh -c' per concatenare i comandi in modo più pulito se necessario, 
-    # ma qui li eseguiamo uno alla volta tramite la lista per chiarezza.
     commands = [
-        # CREAZIONE CANALE: Aggiunti flag --tls e --cafile
-        f"peer channel create -o orderer:7050 -c mychannel -f /fabric/channel-artifacts/mychannel.tx --outputBlock /fabric/channel-artifacts/mychannel.block --tls --cafile {orderer_ca}",
+        # CREAZIONE CANALE: Usiamo 'export ... && peer ...' per diventare Admin temporaneamente
+        f"export CORE_PEER_MSPCONFIGPATH={admin_msp} && peer channel create -o orderer:7050 -c mychannel -f /fabric/channel-artifacts/mychannel.tx --outputBlock /fabric/channel-artifacts/mychannel.block --tls --cafile {orderer_ca}",
         
-        # JOIN CANALE: Non serve TLS qui perché il peer parla a se stesso localmente
-        "peer channel join -b /fabric/channel-artifacts/mychannel.block",
+        # JOIN CANALE: Anche qui usiamo Admin per coerenza, anche se basterebbe il Peer user
+        f"export CORE_PEER_MSPCONFIGPATH={admin_msp} && peer channel join -b /fabric/channel-artifacts/mychannel.block",
         
-        # UPDATE ANCHOR PEERS: Serve TLS perché parla con l'Orderer
-        f"peer channel update -o orderer:7050 -c mychannel -f /fabric/channel-artifacts/Org1MSPanchors.tx --tls --cafile {orderer_ca}"
+        # UPDATE ANCHOR PEERS: Richiede tassativamente Admin
+        f"export CORE_PEER_MSPCONFIGPATH={admin_msp} && peer channel update -o orderer:7050 -c mychannel -f /fabric/channel-artifacts/Org1MSPanchors.tx --tls --cafile {orderer_ca}"
     ]
 
     for cmd in commands:
-        print(f"     Exec: {cmd.split(' ')[2]}...") # Stampa "create...", "join...", "update..."
-        # Eseguiamo dentro il container del peer
-        run_command(["kubectl", "exec", "deploy/peer0-org1", "--", "sh", "-c", cmd], allow_fail=True)
+        print(f"     Exec step...") 
+        # Rimosso allow_fail=True: se fallisce la creazione canale, lo script deve fermarsi!
+        run_command(["kubectl", "exec", "deploy/peer0-org1", "--", "sh", "-c", cmd], allow_fail=False)
 
     print("✅ Blockchain Network Active.")
+
+def deploy_chaincode():
+    print("\n📜 [Blockchain] Deploying Chaincode 'filiera360'...")
+    
+    # 1. Trova il nome del Pod Peer
+    peer_pod = subprocess.check_output(
+        ["kubectl", "get", "pod", "-l", "app=peer0-org1", "-o", "jsonpath={.items[0].metadata.name}"], 
+        env=ENV_VARS
+    ).decode("utf-8").strip()
+    print(f"   - Peer Pod found: {peer_pod}")
+    
+    cc_name = "filiera360"
+    cc_version = "1.0"
+    cc_sequence = "1"
+    base_path = "/opt/gopath/src/github.com/chaincode_source"
+    orderer_ca = "/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"
+    admin_msp = "/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp"
+
+    # 2. Copia sorgente (Pulizia preventiva)
+    print("   - Copying source code...")
+    run_command(["kubectl", "exec", peer_pod, "--", "rm", "-rf", base_path], allow_fail=True)
+    run_command(["kubectl", "exec", peer_pod, "--", "mkdir", "-p", base_path])
+    
+    # Copia i file locali nel pod
+    run_command(["kubectl", "cp", "./microservices/filiera360/chaincode", f"{peer_pod}:{base_path}"])
+    
+    # --- RILEVAMENTO AUTOMATICO DEL PERCORSO ---
+    print("   - Detecting package.json path...")
+    # Controlliamo se kubectl cp ha creato una sottocartella 'chaincode'
+    check_nested = ["kubectl", "exec", peer_pod, "--", "test", "-f", f"{base_path}/chaincode/package.json"]
+    try:
+        subprocess.check_call(check_nested, env=ENV_VARS, stderr=subprocess.DEVNULL)
+        final_cc_path = f"{base_path}/chaincode"
+        print(f"     -> Found nested structure. Using path: {final_cc_path}")
+    except:
+        final_cc_path = base_path
+        print(f"     -> Found flat structure. Using path: {final_cc_path}")
+    # -------------------------------------------
+
+    # 3. Package
+    print("   - Packaging...")
+    run_command(["kubectl", "exec", peer_pod, "--", "peer", "lifecycle", "chaincode", "package", f"{cc_name}.tar.gz", 
+                 "--path", final_cc_path, # Usiamo il path rilevato dinamicamente
+                 "--lang", "node", 
+                 "--label", f"{cc_name}_{cc_version}"])
+    
+    # 4. Install (as Admin)
+    print("   - Installing (as Admin)...")
+    install_cmd = [
+        "kubectl", "exec", peer_pod, "--", "sh", "-c",
+        f"export CORE_PEER_MSPCONFIGPATH={admin_msp} && "
+        f"peer lifecycle chaincode install {cc_name}.tar.gz"
+    ]
+    run_command(install_cmd)
+    
+    # 5. Get Package ID
+    print("   - Querying Package ID...")
+    query_cmd = [
+        "kubectl", "exec", peer_pod, "--", "sh", "-c",
+        f"export CORE_PEER_MSPCONFIGPATH={admin_msp} && "
+        "peer lifecycle chaincode queryinstalled"
+    ]
+    result = subprocess.check_output(query_cmd, env=ENV_VARS).decode("utf-8")
+    
+    match = re.search(f"{cc_name}_{cc_version}:[a-zA-Z0-9]+", result)
+    if not match:
+        print(f"❌ Error: Package ID not found in output:\n{result}")
+        sys.exit(1)
+    package_id = match.group(0)
+    print(f"     ID: {package_id}")
+    
+    # 6. Approve
+    print("   - Approving (Org1)...")
+    approve_cmd = [
+        "kubectl", "exec", peer_pod, "--", "sh", "-c",
+        f"export CORE_PEER_MSPCONFIGPATH={admin_msp} && "
+        f"peer lifecycle chaincode approveformyorg -o orderer:7050 --ordererTLSHostnameOverride orderer.example.com "
+        f"--channelID mychannel --name {cc_name} --version {cc_version} --package-id {package_id} "
+        f"--sequence {cc_sequence} --tls --cafile {orderer_ca}"
+    ]
+    run_command(approve_cmd)
+    
+    # 7. Commit
+    print("   - Committing...")
+    commit_cmd = [
+        "kubectl", "exec", peer_pod, "--", "sh", "-c",
+        f"export CORE_PEER_MSPCONFIGPATH={admin_msp} && "
+        f"peer lifecycle chaincode commit -o orderer:7050 --ordererTLSHostnameOverride orderer.example.com "
+        f"--channelID mychannel --name {cc_name} --version {cc_version} --sequence {cc_sequence} "
+        f"--tls --cafile {orderer_ca}"
+    ]
+    run_command(commit_cmd)
+    
+    print("✅ Chaincode Deployed Successfully.")
 
 def start_infrastructure():
     generate_fabric_artifacts()
@@ -145,6 +244,9 @@ nodes:
   extraMounts:
   - hostPath: {NETWORK_PATH}
     containerPath: /tmp/fabric-network
+    # --- AGGIUNTA FONDAMENTALE PER CHAINCODE ---
+  - hostPath: /var/run/docker.sock
+    containerPath: /var/run/docker.sock
 """
         with open("kind-config.yaml", "w") as f:
             f.write(config_content)
@@ -202,7 +304,33 @@ nodes:
     #run_command(["kubectl", "apply", "-f", "k8s/chatbot/"])
 
     # --- BLOCKCHAIN POST-DEPLOYMENT STEPS ---
+    # --- FIX DEADLOCK: RESET FORZATO PER CARICARE CERTIFICATI E LIBERARE PORTE ---
+    print("\n🔄 [Blockchain] Resetting nodes to load new certificates & fix HostPort...")
+
+    # 1. Riavvia Orderer (non ha hostPort, quindi rollout va bene)
+    print("   - Restarting Orderer...")
+    run_command(["kubectl", "rollout", "restart", "deployment/orderer"], allow_fail=True)
+
+    # 2. RESET PEER: Scale a 0 per liberare la porta 7052 (Deadlock prevention)
+    print("   - Stopping Peer (Scaling to 0) to release port 7052...")
+    run_command(["kubectl", "scale", "deployment/peer0-org1", "--replicas=0"], allow_fail=True)
+    
+    # Aspetta che il vecchio pod muoia davvero
+    print("   - Waiting for Peer to terminate...")
+    run_command(["kubectl", "wait", "--for=delete", "pod", "-l", "app=peer0-org1", "--timeout=60s"], allow_fail=True)
+
+    # 3. Riaccendi il Peer
+    print("   - Starting Peer (Scaling to 1)...")
+    run_command(["kubectl", "scale", "deployment/peer0-org1", "--replicas=1"])
+
+    # 4. Attesa che tutto sia pronto (Rollout status è più sicuro di wait pod)
+    print("   ⏳ Waiting for Fabric nodes to be fully ready...")
+    run_command(["kubectl", "rollout", "status", "deployment/orderer", "--timeout=120s"])
+    run_command(["kubectl", "rollout", "status", "deployment/peer0-org1", "--timeout=120s"])
+    time.sleep(5)
     setup_blockchain_channel()
+    deploy_chaincode()
+    run_command(["kubectl", "rollout", "restart", "deployment/filiera-middleware"], allow_fail=True)
 
     print("   - Installing Ingress Controller (Nginx)...")
     run_command(["kubectl", "apply", "-f", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml"], allow_fail=True)
@@ -234,7 +362,7 @@ def destroy_infrastructure():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="EcoFoodChain Artifact Manager")
-    parser.add_argument("action", choices=["start", "destroy"], help="Action to perform")
+    parser.add_argument("action", choices=["start", "destroy", "deploy-cc"], help="Action to perform")
     
     # If no arguments provided, print help
     if len(sys.argv) == 1:
@@ -249,3 +377,5 @@ if __name__ == "__main__":
         start_infrastructure()
     elif args.action == "destroy":
         destroy_infrastructure()
+    elif args.action == "deploy-cc":
+        deploy_chaincode()

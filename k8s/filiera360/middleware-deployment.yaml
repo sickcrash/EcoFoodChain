@@ -13,8 +13,22 @@ spec:
         app: filiera-middleware
     spec:
       containers:
-      - name: filiera-frontend
+      - name: filiera-middleware
         image: ecofoodchain/filiera-middleware:latest
         imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 3000
+        env:
+        - name: PORT
+          value: "3000"
+        - name: DISCOVERY_AS_LOCALHOST
+          value: "false"
+        - name: CCP_PATH
+          value: "/fabric/connection-org1.json"
+        - name: WALLET_PATH
+          value: "/fabric/wallet"
+        volumeMounts:
+        - mountPath: /fabric
+          name: fabric-data
+      volumes:
+      - name: fabric-data
+        persistentVolumeClaim:
+          claimName: fabric-pvc

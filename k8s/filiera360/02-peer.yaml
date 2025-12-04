@@ -27,9 +27,24 @@ spec:
       labels:
         app: peer0-org1
     spec:
+      # --- 1. Security Context del POD (Utente Root) ---
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      # -------------------------------------------------
       containers:
       - name: peer0-org1
         image: hyperledger/fabric-peer:2.5
+        # --- 2. Security Context del CONTAINER (Privileged) ---
+        securityContext:
+          privileged: true
+        # --- BLOCCO MANCANTE AGGIUNTO ---
+        ports:
+          - containerPort: 7051
+          - containerPort: 7052
+            hostPort: 7052
+        # -------------------------------
+        # ------------------------------------------------------
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
         command: ["peer", "node", "start"]
         env:
@@ -41,19 +56,22 @@ spec:
           value: "0.0.0.0:7051"
         - name: CORE_PEER_CHAINCODELISTENADDRESS
           value: "0.0.0.0:7052"
+        - name: CORE_PEER_CHAINCODEADDRESS
+          value: "ecofood-cluster-control-plane:7052"
         - name: CORE_PEER_LOCALMSPID
           value: "Org1MSP"
         - name: CORE_PEER_MSPCONFIGPATH
           value: "/fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp"
         - name: CORE_VM_ENDPOINT
           value: "unix:///host/var/run/docker.sock"
+        - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
+          value: "kind"
         - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
           value: "peer0-org1:7051"
         - name: CORE_PEER_GOSSIP_USELEADERELECTION
           value: "true"
         - name: CORE_PEER_GOSSIP_ORGLEADER
           value: "false"
-        # --- ABILITAZIONE TLS ---
         - name: CORE_PEER_TLS_ENABLED
           value: "true"
         - name: CORE_PEER_TLS_CERT_FILE
