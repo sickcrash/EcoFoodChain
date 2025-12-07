@@ -13,20 +13,24 @@ spec:
         app: cloud-gaming-test
     spec:
       containers:
-      # --- 1. CONTAINER UNITY ---
+      # --- CONTAINER UNITY ---
       - name: unity-renderer
-        image: ecofoodchain/cloud-gaming-test:latest  
+        image: ecofoodchain/cloud-gaming-test:latest
         imagePullPolicy: IfNotPresent
-        # Argomenti vitali per l'avvio headless
-        args: ["-batchmode", "-nographics", "-signalingURL", "ws://localhost:80"]
-        resources:
-          limits:
-            memory: "2Gi"
-            cpu: "1000m"
-            # Scommenta sotto se hai GPU Nvidia su Linux/Kind
-            # nvidia.com/gpu: 1 
+        # FIX 1: Definiamo la variabile mancante
+        env:
+        - name: XDG_RUNTIME_DIR
+          value: "/tmp"
+        # FIX 2: Argomenti più robusti per evitare crash audio/video
+        args: 
+          - "-batchmode" 
+          - "-nographics" 
+          - "-noUmp" 
+          - "-nolog" # Disabilita il log interno per evitare conflitti di I/O
+          - "-signalingURL" 
+          - "ws://localhost:80"
 
-      # --- 2. CONTAINER SIGNALING (Sidecar) ---
+      # --- CONTAINER SIGNALING ---
       - name: signaling-server
         image: unitytechnologies/render-streaming-webserver:3.1.0
         imagePullPolicy: IfNotPresent
