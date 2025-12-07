@@ -1,3 +1,6 @@
+# Hardcoded addresses for prototype determinism; to be replaced
+# with dynamic Service DNS and LocalStack emulation in future
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -62,6 +65,8 @@ spec:
           value: "Org1MSP"
         - name: CORE_PEER_MSPCONFIGPATH
           value: "/fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp"
+        # Using host Docker socket for prototype only; External Builder
+        # approach will replace this in production
         - name: CORE_VM_ENDPOINT
           value: "unix:///host/var/run/docker.sock"
         - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
@@ -90,5 +95,7 @@ spec:
         persistentVolumeClaim:
           claimName: fabric-pvc
       - name: dockersock
+      # NOTE: hostPath used for prototype reproducibility; in future work this
+# will be replaced with LocalStack-backed persistent storage
         hostPath:
           path: /var/run/docker.sock

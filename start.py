@@ -244,7 +244,8 @@ nodes:
   extraMounts:
   - hostPath: {NETWORK_PATH}
     containerPath: /tmp/fabric-network
-    # --- AGGIUNTA FONDAMENTALE PER CHAINCODE ---
+    # NOTE: hostPath used for prototype reproducibility; in future work this
+# will be replaced with LocalStack-backed persistent storage
   - hostPath: /var/run/docker.sock
     containerPath: /var/run/docker.sock
 """

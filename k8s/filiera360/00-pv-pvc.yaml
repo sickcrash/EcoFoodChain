@@ -7,7 +7,9 @@ spec:
   capacity:
     storage: 1Gi
   accessModes:
-    - ReadWriteMany
+    - ReadWriteMany # non va bene: dobbiamo usare EFS 
+  # NOTE: hostPath used for prototype reproducibility; in future work this
+  # will be replaced with LocalStack-backed persistent storage
   hostPath:
     path: "/tmp/fabric-network"
 ---
