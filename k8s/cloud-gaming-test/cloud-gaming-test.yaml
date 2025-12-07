@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-gaming-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloud-gaming-test
+  template:
+    metadata:
+      labels:
+        app: cloud-gaming-test
+    spec:
+      containers:
+      # --- 1. CONTAINER UNITY ---
+      - name: unity-renderer
+        image: ecofoodchain/cloud-gaming-test:latest  
+        imagePullPolicy: IfNotPresent
+        # Argomenti vitali per l'avvio headless
+        args: ["-batchmode", "-nographics", "-signalingURL", "ws://localhost:80"]
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+            # Scommenta sotto se hai GPU Nvidia su Linux/Kind
+            # nvidia.com/gpu: 1 
+
+      # --- 2. CONTAINER SIGNALING (Sidecar) ---
+      - name: signaling-server
+        image: unitytechnologies/render-streaming-webserver:3.1.0
+        imagePullPolicy: IfNotPresent
+        command: ["npm", "run", "start", "--", "-w", "80"]
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-gaming-test
+spec:
+  type: ClusterIP
+  selector:
+    app: cloud-gaming-test
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
